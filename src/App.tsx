@@ -1,35 +1,30 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.tsx
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { WizardLayout } from "./components/Layout/WizardLayout";
+import { PersonalInfoStep } from "./steps/PersonalInfoStep";
+import { ExperienceStep } from "./steps/ExperienceStep";
+import { RolePreferencesStep } from "./steps/RolePreferencesStep";
+import { ReviewSubmitStep } from "./steps/ReviewSubmitStep";
+import { FormProvider } from "./context/FormContext";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App: React.FC = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <BrowserRouter>
+      {/* FormProvider will hold global wizard state */}
+      <FormProvider>
+        <WizardLayout>
+          <Routes>
+            <Route path="/" element={<Navigate to="/step/personal" replace />} />
+            <Route path="/step/personal" element={<PersonalInfoStep />} />
+            <Route path="/step/experience" element={<ExperienceStep />} />
+            <Route path="/step/preferences" element={<RolePreferencesStep />} />
+            <Route path="/step/review" element={<ReviewSubmitStep />} />
+          </Routes>
+        </WizardLayout>
+      </FormProvider>
+    </BrowserRouter>
+  );
+};
 
-export default App
+export default App;
