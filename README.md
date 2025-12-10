@@ -250,7 +250,7 @@ npm run format
 ### 1. Clone Repo
 
 ```bash
-git clone https://github.com/<your-username>/job-application-wizard.git
+git clone https://github.com/grovernitin48/job-application-wizard.git
 cd job-application-wizard
 ```
 
