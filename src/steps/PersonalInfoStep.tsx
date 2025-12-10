@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useFormContext } from "../context/FormContext";
@@ -23,6 +23,19 @@ export const PersonalInfoStep: React.FC = () => {
     mode: "onBlur",
     defaultValues: data.personalInfo,
   });
+
+  useEffect(() => {
+    const subscription = watch((values) => {
+      updateForm({
+        personalInfo: {
+          ...data.personalInfo,
+          ...values,
+        },
+      });
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, updateForm, data.personalInfo]);
 
   const onSubmit = async (values: PersonalInfoFormValues) => {
     updateForm({ personalInfo: values });
@@ -81,9 +94,7 @@ export const PersonalInfoStep: React.FC = () => {
             Checking email...
           </p>
         )}
-        {errors.email && (
-          <p style={{ color: "red" }}>{errors.email.message}</p>
-        )}
+        {errors.email && <p style={{ color: "red" }}>{errors.email.message}</p>}
       </div>
 
       {/* Navigation */}

@@ -20,11 +20,29 @@ export const RolePreferencesStep: React.FC = () => {
     mode: "onBlur",
     defaultValues: data.rolePreferences,
   });
-
   const { fields, append, remove } = useFieldArray({
     control,
     name: "portfolioUrls",
   });
+
+  // Auto-sync role preferences into global context
+  useEffect(() => {
+    const subscription = watch((values) => {
+      // Ensure portfolioUrls is always string[]
+      const rawUrls = values.portfolioUrls ?? [];
+      const normalizedUrls = rawUrls.map((url) => url ?? "");
+
+      updateForm({
+        rolePreferences: {
+          ...data.rolePreferences,
+          ...values,
+          portfolioUrls: normalizedUrls,
+        },
+      });
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, updateForm, data.rolePreferences]);
 
   // Ensure at least one empty field exists when we need portfolio URLs
   useEffect(() => {
@@ -59,9 +77,11 @@ export const RolePreferencesStep: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <h2 style={{ marginBottom: "0.5rem" }}>Role Preferences</h2>
-      <p style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}>
-        Help us understand what kind of role and working style you are looking for.
-        Some options may unlock additional questions.
+      <p
+        style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}
+      >
+        Help us understand what kind of role and working style you are looking
+        for. Some options may unlock additional questions.
       </p>
 
       {/* Schema-driven fields */}

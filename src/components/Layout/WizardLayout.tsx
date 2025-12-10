@@ -1,15 +1,20 @@
 // src/components/Layout/WizardLayout.tsx
-import React from "react";
-
+import React, { useEffect }  from "react";
+import { useLocation } from "react-router-dom";
+import { useFormContext } from "../../context/FormContext";
 interface WizardLayoutProps {
   children: React.ReactNode;
 }
 
-/**
- * Basic layout wrapper for the whole wizard with header and container.
- * We'll style this later.
- */
 export const WizardLayout: React.FC<WizardLayoutProps> = ({ children }) => {
+  const location = useLocation();
+  const { setCurrentStep } = useFormContext();
+
+  useEffect(() => {
+    // Anytime the route changes, remember it as the current step
+    setCurrentStep(location.pathname);
+  }, [location.pathname, setCurrentStep]);
+
   return (
     <div
       style={{

@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { DRAFT_STORAGE_KEY } from "../utils/storageKeys";
+
 
 // --------- Types for each step ---------
 export interface PersonalInfo {
@@ -67,26 +69,75 @@ const FormContext = createContext<FormContextValue | undefined>(undefined);
 
 /**
  * FormProvider – holds global wizard state.
- * We'll later:
- * - plug in auto-save to localStorage
- * - hydrate from drafts
- * - add reset logic to clear drafts
+ * Responsibilities:
+ *  - Initialize from any saved draft in localStorage.
+ *  - Auto-save to localStorage whenever data or currentStep changes.
+ *  - Provide reset() to clear in-memory state (and callers clear storage).
  */
 export const FormProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [data, setData] = useState<JobApplicationForm>(defaultForm);
+  // Initialize from localStorage draft synchronously so forms get correct defaultValues
+  const [data, setData] = useState<JobApplicationForm>(() => {
+    try {
+      const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (!raw) return defaultForm;
+
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.data) {
+        return {
+          ...defaultForm,
+          ...parsed.data,
+        };
+      }
+    } catch {
+      // ignore parse/storage errors
+    }
+    return defaultForm;
+  });
+
+  const [currentStep, setCurrentStep] = useState<string>(() => {
+    try {
+      const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (!raw) return "/step/personal";
+
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.lastStep === "string") {
+        return parsed.lastStep;
+      }
+    } catch {
+      // ignore
+    }
+    return "/step/personal";
+  });
 
   const updateForm = (patch: Partial<JobApplicationForm>) => {
-    // For now we replace sections (personalInfo / experience / rolePreferences)
-    // based on what is passed in patch.
+    // We merge top-level sections (personalInfo / experience / rolePreferences)
     setData((prev) => ({ ...prev, ...patch }));
   };
 
-  const resetForm = () => setData(defaultForm);
+  const resetForm = () => {
+    setData(defaultForm);
+    setCurrentStep("/step/personal");
+  };
+
+  // Auto-save to localStorage whenever form data or currentStep changes
+  useEffect(() => {
+    try {
+      const payload = JSON.stringify({
+        data,
+        lastStep: currentStep,
+      });
+      window.localStorage.setItem(DRAFT_STORAGE_KEY, payload);
+    } catch {
+      // ignore write errors (quota, private mode, etc.)
+    }
+  }, [data, currentStep]);
 
   return (
-    <FormContext.Provider value={{ data, updateForm, resetForm }}>
+    <FormContext.Provider
+      value={{ data, updateForm, resetForm, currentStep, setCurrentStep }}
+    >
       {children}
     </FormContext.Provider>
   );

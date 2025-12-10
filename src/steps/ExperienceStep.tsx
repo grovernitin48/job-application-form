@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useFormContext } from "../context/FormContext";
@@ -21,6 +21,19 @@ export const ExperienceStep: React.FC = () => {
     defaultValues: data.experience,
   });
 
+  useEffect(() => {
+    const subscription = watch((values) => {
+      updateForm({
+        experience: {
+          ...data.experience,
+          ...values,
+        },
+      });
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, updateForm, data.experience]);
+
   // We watch yearsOfExperience so we can:
   // - show/hide advanced fields
   // - show "Mentorship Required?" when < 2 years
@@ -42,9 +55,11 @@ export const ExperienceStep: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <h2 style={{ marginBottom: "0.5rem" }}>Experience</h2>
-      <p style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}>
-        Tell us about your background. Some advanced questions depend on how many
-        years of experience you have.
+      <p
+        style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}
+      >
+        Tell us about your background. Some advanced questions depend on how
+        many years of experience you have.
       </p>
 
       {experienceFields.map((field) => {
@@ -184,15 +199,18 @@ export const ExperienceStep: React.FC = () => {
               cursor: "pointer",
             }}
           >
-            <input
-              type="checkbox"
-              {...register("mentorshipRequired")}
-            />
+            <input type="checkbox" {...register("mentorshipRequired")} />
             <span>Mentorship required?</span>
           </label>
-          <p style={{ marginTop: "0.4rem", fontSize: "0.8rem", color: "#475569" }}>
-            Since you have less than 2 years of experience, we can match you with
-            a mentor.
+          <p
+            style={{
+              marginTop: "0.4rem",
+              fontSize: "0.8rem",
+              color: "#475569",
+            }}
+          >
+            Since you have less than 2 years of experience, we can match you
+            with a mentor.
           </p>
         </div>
       )}

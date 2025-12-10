@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useFormContext } from "../context/FormContext";
 import { WizardNavigation } from "../components/Wizard/WizardNavigation";
 
-const DRAFT_STORAGE_KEY = "jobApplicationDraft";
+import { DRAFT_STORAGE_KEY } from "../utils/storageKeys";
 
 export const ReviewSubmitStep: React.FC = () => {
   const { data, resetForm } = useFormContext();
