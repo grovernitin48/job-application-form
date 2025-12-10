@@ -38,16 +38,10 @@ describe("ExperienceStep", () => {
     await user.type(yearsInput, "3");
 
     // Advanced fields should appear
-    expect(
-      screen.getByLabelText(/react experience \(years\)/i)
-    ).toBeInTheDocument();
-    expect(
-      screen.getByLabelText(/have you led a team before\?/i)
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText(/react experience \(years\)/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/have you led a team before\?/i)).toBeInTheDocument();
 
     // Mentorship card should be hidden
-    expect(
-      screen.queryByText(/early-career support/i)
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/early-career support/i)).not.toBeInTheDocument();
   });
 });

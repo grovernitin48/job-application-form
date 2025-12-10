@@ -56,11 +56,9 @@ export const ReviewSubmitStep: React.FC = () => {
   return (
     <form onSubmit={handleSubmit}>
       <h2 style={{ marginBottom: "0.5rem" }}>Review & Submit</h2>
-      <p
-        style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}
-      >
-        Please review your application before submitting. You can go back to any
-        step to make changes.
+      <p style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}>
+        Please review your application before submitting. You can go back to any step to
+        make changes.
       </p>
 
       {/* Personal Info Card */}
@@ -108,12 +106,10 @@ export const ReviewSubmitStep: React.FC = () => {
             <strong>Current Role:</strong> {safeValue(experience.currentRole)}
           </div>
           <div style={{ marginBottom: "0.25rem" }}>
-            <strong>Primary Tech Stack:</strong>{" "}
-            {safeValue(experience.primaryTechStack)}
+            <strong>Primary Tech Stack:</strong> {safeValue(experience.primaryTechStack)}
           </div>
           <div style={{ marginBottom: "0.25rem" }}>
-            <strong>React Experience (years):</strong>{" "}
-            {safeValue(experience.reactYears)}
+            <strong>React Experience (years):</strong> {safeValue(experience.reactYears)}
           </div>
           <div style={{ marginBottom: "0.25rem" }}>
             <strong>Team Lead Experience:</strong>{" "}
@@ -147,16 +143,13 @@ export const ReviewSubmitStep: React.FC = () => {
         </h3>
         <div style={{ fontSize: "0.9rem", color: "#0f172a" }}>
           <div style={{ marginBottom: "0.25rem" }}>
-            <strong>Preferred Role:</strong>{" "}
-            {safeValue(rolePreferences.preferredRole)}
+            <strong>Preferred Role:</strong> {safeValue(rolePreferences.preferredRole)}
           </div>
           <div style={{ marginBottom: "0.25rem" }}>
-            <strong>Work Mode:</strong>{" "}
-            {safeValue(rolePreferences.workLocationType)}
+            <strong>Work Mode:</strong> {safeValue(rolePreferences.workLocationType)}
           </div>
           <div style={{ marginBottom: "0.25rem" }}>
-            <strong>Expected Salary:</strong>{" "}
-            {safeValue(rolePreferences.expectedSalary)}
+            <strong>Expected Salary:</strong> {safeValue(rolePreferences.expectedSalary)}
           </div>
           <div style={{ marginBottom: "0.25rem" }}>
             <strong>Open to Relocation:</strong>{" "}
@@ -249,8 +242,7 @@ export const ReviewSubmitStep: React.FC = () => {
             fontWeight: 500,
           }}
         >
-          ✅ Application submitted (mock). We’ll discuss this flow during the
-          interview.
+          ✅ Application submitted. Thank you for applying!
         </p>
       )}
 

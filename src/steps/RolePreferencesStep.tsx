@@ -85,11 +85,9 @@ export const RolePreferencesStep: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <h2 style={{ marginBottom: "0.5rem" }}>Role Preferences</h2>
-      <p
-        style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}
-      >
-        Help us understand what kind of role and working style you are looking
-        for. Some options may unlock additional questions.
+      <p style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}>
+        Help us understand what kind of role and working style you are looking for. Some
+        options may unlock additional questions.
       </p>
 
       {/* Schema-driven fields */}
@@ -115,8 +113,7 @@ export const RolePreferencesStep: React.FC = () => {
                 id={field.name}
                 {...register(field.name, {
                   required:
-                    field.name === "preferredRole" ||
-                    field.name === "workLocationType"
+                    field.name === "preferredRole" || field.name === "workLocationType"
                       ? "This field is required"
                       : false,
                 })}
@@ -185,11 +182,7 @@ export const RolePreferencesStep: React.FC = () => {
                   cursor: "pointer",
                 }}
               >
-                <input
-                  id={field.name}
-                  type="checkbox"
-                  {...register(field.name)}
-                />
+                <input id={field.name} type="checkbox" {...register(field.name)} />
                 <span>{field.label}</span>
               </label>
             )}
@@ -228,8 +221,8 @@ export const RolePreferencesStep: React.FC = () => {
               color: "#78350f",
             }}
           >
-            Since you have more than 3 years of React experience and prefer a
-            Frontend role, please share links to your portfolio or key projects.
+            Since you have more than 3 years of React experience and prefer a Frontend
+            role, please share links to your portfolio or key projects.
           </p>
 
           {fields.map((field, index) => (

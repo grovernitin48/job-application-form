@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { DRAFT_STORAGE_KEY } from "../utils/storageKeys";
 
@@ -75,9 +74,7 @@ const FormContext = createContext<FormContextValue | undefined>(undefined);
  * - Initializes from localStorage draft
  * - Auto-saves data + last step back to localStorage
  */
-export const FormProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState<JobApplicationForm>(() => {
     try {
       const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);

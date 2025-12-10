@@ -39,8 +39,7 @@ export const ExperienceStep: React.FC = () => {
   // - show "Mentorship Required?" when < 2 years
   const yearsOfExperience = watch("yearsOfExperience");
 
-  const showAdvanced =
-    typeof yearsOfExperience === "number" && yearsOfExperience >= 2;
+  const showAdvanced = typeof yearsOfExperience === "number" && yearsOfExperience >= 2;
 
   const showMentorshipToggle =
     typeof yearsOfExperience === "number" &&
@@ -55,11 +54,9 @@ export const ExperienceStep: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <h2 style={{ marginBottom: "0.5rem" }}>Experience</h2>
-      <p
-        style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}
-      >
-        Tell us about your background. Some advanced questions depend on how
-        many years of experience you have.
+      <p style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}>
+        Tell us about your background. Some advanced questions depend on how many years of
+        experience you have.
       </p>
 
       {experienceFields.map((field) => {
@@ -91,9 +88,7 @@ export const ExperienceStep: React.FC = () => {
                 id={field.name}
                 {...register(field.name, {
                   required:
-                    field.name === "currentRole"
-                      ? "Current role is required"
-                      : false,
+                    field.name === "currentRole" ? "Current role is required" : false,
                 })}
                 placeholder={field.placeholder}
                 style={{
@@ -155,11 +150,7 @@ export const ExperienceStep: React.FC = () => {
                   cursor: "pointer",
                 }}
               >
-                <input
-                  id={field.name}
-                  type="checkbox"
-                  {...register(field.name)}
-                />
+                <input id={field.name} type="checkbox" {...register(field.name)} />
                 <span>{field.label}</span>
               </label>
             )}
@@ -208,8 +199,8 @@ export const ExperienceStep: React.FC = () => {
               color: "#475569",
             }}
           >
-            Since you have less than 2 years of experience, we can match you
-            with a mentor.
+            Since you have less than 2 years of experience, we can match you with a
+            mentor.
           </p>
         </div>
       )}

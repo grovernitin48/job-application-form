@@ -50,10 +50,7 @@ export const PersonalInfoStep: React.FC = () => {
 
       {/* Full Name */}
       <div style={{ marginBottom: "1rem" }}>
-        <label
-          htmlFor="fullName"
-          style={{ display: "block", marginBottom: "0.3rem" }}
-        >
+        <label htmlFor="fullName" style={{ display: "block", marginBottom: "0.3rem" }}>
           Full Name
         </label>
         <input
@@ -66,17 +63,12 @@ export const PersonalInfoStep: React.FC = () => {
             border: "1px solid #cbd5e1",
           }}
         />
-        {errors.fullName && (
-          <p style={{ color: "red" }}>{errors.fullName.message}</p>
-        )}
+        {errors.fullName && <p style={{ color: "red" }}>{errors.fullName.message}</p>}
       </div>
 
       {/* Email */}
       <div style={{ marginBottom: "1rem" }}>
-        <label
-          htmlFor="email"
-          style={{ display: "block", marginBottom: "0.3rem" }}
-        >
+        <label htmlFor="email" style={{ display: "block", marginBottom: "0.3rem" }}>
           Email
         </label>
         <input
@@ -98,9 +90,7 @@ export const PersonalInfoStep: React.FC = () => {
           }}
         />
         {isSubmitting && emailValue && (
-          <p style={{ color: "#2563eb", marginTop: "0.3rem" }}>
-            Checking email...
-          </p>
+          <p style={{ color: "#2563eb", marginTop: "0.3rem" }}>Checking email...</p>
         )}
         {errors.email && <p style={{ color: "red" }}>{errors.email.message}</p>}
       </div>

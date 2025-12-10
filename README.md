@@ -11,12 +11,12 @@ Designed as part of an offline coding assignment emphasizing **clean architectur
 
 ### ✅ 1. Multi-step Wizard
 
-* Personal Info
-* Experience
-* Role Preferences
-* Review & Submit
-* Forward/back navigation with validation
-* Persistent step tracking across refresh
+- Personal Info
+- Experience
+- Role Preferences
+- Review & Submit
+- Forward/back navigation with validation
+- Persistent step tracking across refresh
 
 ### ✅ 2. Dynamic Schema-Driven Fields
 
@@ -24,25 +24,24 @@ Both **Experience** and **Role Preferences** steps are generated from JSON-typed
 
 **Dynamic logic implemented:**
 
-* If **Years of Experience < 2** → hide Advanced fields, show **Mentorship Required?**
-* If **Preferred Role = Frontend** AND **React Experience > 3** → show repeatable **Portfolio URLs** field (add/remove rows)
+- If **Years of Experience < 2** → hide Advanced fields, show **Mentorship Required?**
+- If **Preferred Role = Frontend** AND **React Experience > 3** → show repeatable **Portfolio URLs** field (add/remove rows)
 
 ### ✅ 3. Auto-Save Drafts (LocalStorage)
 
-* Auto-save on blur + on value change
-* Stores:
-
-  * Form data
-  * Last visited step
-  * Fully restores the form on page reload
+- Auto-save on blur + on value change
+- Stores:
+  - Form data
+  - Last visited step
+  - Fully restores the form on page reload
 
 ### ✅ 4. Dynamic Progress Indicator
 
 The progress bar adapts to:
 
-* Whether the user qualifies for advanced experience fields
-* Whether mentorship section is needed
-* Whether portfolio URLs section is needed
+- Whether the user qualifies for advanced experience fields
+- Whether mentorship section is needed
+- Whether portfolio URLs section is needed
 
 👉 Progress is calculated **only from visible sections**, not hardcoded steps.
 
@@ -50,20 +49,20 @@ The progress bar adapts to:
 
 A mock async API validates email uniqueness:
 
-* Emails containing `"test"` are rejected with a structured error
-* You can demonstrate async UX behaviour
+- Emails containing `"test"` are rejected with a structured error
+- You can demonstrate async UX behaviour
 
 ### ✅ 6. Clean Architecture & State Management
 
-* `FormContext` handles global form state, autosave, and schema logic.
-* Each step is fully typed using TypeScript models.
-* UI components are decoupled from business logic.
+- `FormContext` handles global form state, autosave, and schema logic.
+- Each step is fully typed using TypeScript models.
+- UI components are decoupled from business logic.
 
 ### ✅ 7. Behaviour Tests (Vitest + RTL)
 
-* **PersonalInfoStep:** async email validation
-* **ExperienceStep:** dynamic fields (advanced vs mentorship)
-* **RolePreferencesStep:** included but currently `describe.skip` due to environment timing issue
+- **PersonalInfoStep:** async email validation
+- **ExperienceStep:** dynamic fields (advanced vs mentorship)
+- **RolePreferencesStep:** included but currently `describe.skip` due to environment timing issue
 
 > Tests demonstrate behaviour, not implementation details.
 
@@ -102,21 +101,21 @@ src/
 
 ### **Frontend**
 
-* React (with Hooks)
-* TypeScript
-* React Router
-* React Hook Form
-* Vite
+- React (with Hooks)
+- TypeScript
+- React Router
+- React Hook Form
+- Vite
 
 ### **Testing**
 
-* Vitest
-* React Testing Library
-* happy-dom (test environment)
+- Vitest
+- React Testing Library
+- happy-dom (test environment)
 
 ### **Storage**
 
-* LocalStorage for autosave drafts
+- LocalStorage for autosave drafts
 
 ---
 
@@ -150,19 +149,18 @@ npm run test
 
 # 🧪 Testing Notes
 
-* Tests use **happy-dom** instead of jsdom to avoid ESM/CJS parsing issues.
-* A shared `renderWithProviders()` helper wraps components in:
-
-  * Router
-  * FormProvider
+- Tests use **happy-dom** instead of jsdom to avoid ESM/CJS parsing issues.
+- A shared `renderWithProviders()` helper wraps components in:
+  - Router
+  - FormProvider
 
 ## Current test coverage:
 
-| Step             | Behaviour tested             | Status                     |
-| ---------------- | ---------------------------- | -------------------------- |
-| Personal Info    | Async email validation       | ✅ PASS                     |
-| Experience       | Dynamic conditional fields   | ✅ PASS                     |
-| Role Preferences | Portfolio URLs (conditional) | ⚠️ Skipped                  |
+| Step             | Behaviour tested             | Status     |
+| ---------------- | ---------------------------- | ---------- |
+| Personal Info    | Async email validation       | ✅ PASS    |
+| Experience       | Dynamic conditional fields   | ✅ PASS    |
+| Role Preferences | Portfolio URLs (conditional) | ⚠️ Skipped |
 
 ---
 
@@ -192,9 +190,9 @@ Instead of static fixed steps, progress adapts to visible fields only.
 
 Only commonly used libraries added:
 
-* React Hook Form (form state, validation)
-* React Router (steps)
-* RTL + Vitest (tests)
+- React Hook Form (form state, validation)
+- React Router (steps)
+- RTL + Vitest (tests)
 
 No over-engineering or excessive libraries.
 
@@ -202,10 +200,10 @@ No over-engineering or excessive libraries.
 
 # 🧹 Trade-offs & Areas for Future Improvement
 
-* `RolePreferencesStep` test is skipped due to async/context timing loops.
+- `RolePreferencesStep` test is skipped due to async/context timing loops.
   Would refactor logic into smaller hooks to make test simpler.
-* Could move inline styles into CSS modules or styled-components.
-* Could abstract progress logic into a dedicated hook for clarity.
+- Could move inline styles into CSS modules or styled-components.
+- Could abstract progress logic into a dedicated hook for clarity.
 
 ---
 

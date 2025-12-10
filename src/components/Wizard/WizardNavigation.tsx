@@ -11,10 +11,7 @@ interface WizardNavigationProps {
  * - Back: simple navigation, does NOT submit the form.
  * - Next: type="submit", relies on the parent <form onSubmit={...}>.
  */
-export const WizardNavigation: React.FC<WizardNavigationProps> = ({
-  next,
-  back,
-}) => {
+export const WizardNavigation: React.FC<WizardNavigationProps> = ({ next, back }) => {
   const navigate = useNavigate();
 
   return (

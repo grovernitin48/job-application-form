@@ -21,9 +21,7 @@ describe("PersonalInfoStep", () => {
     emailInput.blur();
 
     // Wait for async validator (validateEmailUniqueness) to finish
-    const error = await screen.findByText(
-      /email already exists, try another/i
-    );
+    const error = await screen.findByText(/email already exists, try another/i);
     expect(error).toBeInTheDocument();
   });
 

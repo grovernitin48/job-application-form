@@ -7,11 +7,8 @@ import { RolePreferencesStep } from "../steps/RolePreferencesStep";
 import { FormProvider, useFormContext } from "../context/FormContext";
 import { render } from "@testing-library/react";
 
-
 // Helper to set initial experience.reactYears via context
-const WithExperienceSetup: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+const WithExperienceSetup: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { updateForm } = useFormContext();
 
   useEffect(() => {
@@ -52,13 +49,9 @@ describe.skip("RolePreferencesStep", () => {
 
     await user.selectOptions(roleSelect, "frontend");
 
-    expect(
-      screen.getByText(/portfolio urls/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/portfolio urls/i)).toBeInTheDocument();
 
-    const urlInputs = container.querySelectorAll(
-      'input[placeholder^="https://"]'
-    );
+    const urlInputs = container.querySelectorAll('input[placeholder^="https://"]');
     expect(urlInputs.length).toBeGreaterThan(0);
   });
 
@@ -70,8 +63,6 @@ describe.skip("RolePreferencesStep", () => {
 
     await user.selectOptions(roleSelect, "backend");
 
-    expect(
-      screen.queryByText(/portfolio urls/i)
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/portfolio urls/i)).not.toBeInTheDocument();
   });
 });
