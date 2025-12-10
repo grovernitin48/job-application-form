@@ -1,0 +1,27 @@
+import React from "react";
+
+interface TextAreaFieldProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label: string;
+  id: string;
+  error?: string;
+  helperText?: string;
+}
+
+export const TextAreaField: React.FC<TextAreaFieldProps> = ({
+  label,
+  id,
+  error,
+  helperText,
+  ...rest
+}) => {
+  return (
+    <div className="form-field">
+      <label htmlFor={id} className="form-field__label">
+        {label}
+      </label>
+      <textarea id={id} className="form-field__textarea" {...rest} />
+      {helperText && !error && <p className="form-field__helper">{helperText}</p>}
+      {error && <p className="form-field__error">{error}</p>}
+    </div>
+  );
+};

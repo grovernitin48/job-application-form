@@ -1,11 +1,19 @@
+// src/steps/ExperienceStep.tsx
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import { useFormContext } from "../context/FormContext";
 import { experienceFields } from "../schemas/experienceSchema";
-import type { ExperienceFormValues } from "../schemas/experienceSchema";
-
+import {
+  experienceSchema,
+  type ExperienceFormValues,
+} from "../validation/jobApplicationSchemas";
 import { WizardNavigation } from "../components/Wizard/WizardNavigation";
+import { TextField } from "../components/ui/TextField";
+import { TextAreaField } from "../components/ui/TextAreaField";
+import { CheckboxField } from "../components/ui/CheckboxField";
 
 export const ExperienceStep: React.FC = () => {
   const { data, updateForm } = useFormContext();
@@ -18,191 +26,186 @@ export const ExperienceStep: React.FC = () => {
     formState: { errors },
   } = useForm<ExperienceFormValues>({
     mode: "onBlur",
-    defaultValues: data.experience,
+    // Small cast because of RHF + zodResolver typing mismatch. Runtime is safe.
+    resolver: zodResolver(experienceSchema) as any,
+    defaultValues: {
+      yearsOfExperience: data.experience.yearsOfExperience ?? 0,
+      currentRole: data.experience.currentRole,
+      primaryTechStack: data.experience.primaryTechStack,
+      reactYears: data.experience.reactYears ?? undefined,
+      teamLeadExperience: data.experience.teamLeadExperience,
+      summary: data.experience.summary ?? "",
+      mentorshipRequired: data.experience.mentorshipRequired,
+    },
   });
 
+  const watchedValues = watch();
+  const yearsOfExperience = watchedValues.yearsOfExperience ?? 0;
+
+  const showAdvanced = yearsOfExperience >= 2;
+  const showMentorship = yearsOfExperience > 0 && yearsOfExperience < 2;
+
+  const baseFields = experienceFields.filter((field) => !field.isAdvanced);
+  const advancedFields = experienceFields.filter((field) => field.isAdvanced);
+
+  // Keep Experience data in global context synced to form values
   useEffect(() => {
     const subscription = watch((values) => {
       updateForm({
         experience: {
           ...data.experience,
           ...values,
+          yearsOfExperience:
+            typeof values.yearsOfExperience === "number"
+              ? values.yearsOfExperience
+              : null,
+          reactYears: typeof values.reactYears === "number" ? values.reactYears : null,
         },
       });
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription?.unsubscribe?.();
+    };
   }, [watch, updateForm, data.experience]);
 
-  // We watch yearsOfExperience so we can:
-  // - show/hide advanced fields
-  // - show "Mentorship Required?" when < 2 years
-  const yearsOfExperience = watch("yearsOfExperience");
-
-  const showAdvanced = typeof yearsOfExperience === "number" && yearsOfExperience >= 2;
-
-  const showMentorshipToggle =
-    typeof yearsOfExperience === "number" &&
-    yearsOfExperience !== null &&
-    yearsOfExperience < 2;
-
   const onSubmit = (values: ExperienceFormValues) => {
-    updateForm({ experience: values });
+    updateForm({
+      experience: {
+        ...data.experience,
+        ...values,
+        yearsOfExperience: values.yearsOfExperience,
+        reactYears: typeof values.reactYears === "number" ? values.reactYears : null,
+      },
+    });
+
     navigate("/step/preferences");
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <h2 style={{ marginBottom: "0.5rem" }}>Experience</h2>
-      <p style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}>
-        Tell us about your background. Some advanced questions depend on how many years of
-        experience you have.
+    <form onSubmit={handleSubmit(onSubmit)} className="form-step" noValidate>
+      <h2 className="form-step__title">Experience</h2>
+      <p className="form-step__subtitle">
+        Tell us about your professional background. The form adapts based on your total
+        experience.
       </p>
 
-      {experienceFields.map((field) => {
-        // Years of experience and other base fields are always visible.
-        // Advanced fields (isAdvanced) are hidden if yearsOfExperience < 2.
-        if (field.isAdvanced && !showAdvanced) {
-          return null;
-        }
-
-        const commonLabel = (
-          <label
-            htmlFor={field.name}
-            style={{ display: "block", marginBottom: "0.3rem" }}
-          >
-            {field.label}
-          </label>
-        );
-
+      {/* Base fields – always visible, from typed schema */}
+      {baseFields.map((field) => {
         const fieldError = errors[field.name];
         const errorMessage = fieldError?.message as string | undefined;
 
+        if (field.type === "checkbox") {
+          return (
+            <CheckboxField
+              key={field.name}
+              label={field.label}
+              {...register(field.name)}
+            />
+          );
+        }
+
+        if (field.type === "textarea") {
+          return (
+            <TextAreaField
+              key={field.name}
+              id={field.name}
+              label={field.label}
+              error={errorMessage}
+              placeholder={field.placeholder}
+              {...register(field.name)}
+            />
+          );
+        }
+
+        // number / text fields
+        const isNumber = field.type === "number";
+
         return (
-          <div style={{ marginBottom: "1rem" }} key={field.name as string}>
-            {field.type !== "checkbox" && commonLabel}
-
-            {/* Render based on type */}
-            {field.type === "text" && (
-              <input
-                id={field.name}
-                {...register(field.name, {
-                  required:
-                    field.name === "currentRole" ? "Current role is required" : false,
-                })}
-                placeholder={field.placeholder}
-                style={{
-                  width: "100%",
-                  padding: "0.6rem",
-                  borderRadius: "8px",
-                  border: "1px solid #cbd5e1",
-                }}
-              />
-            )}
-
-            {field.type === "number" && (
-              <input
-                id={field.name}
-                type="number"
-                {...register(field.name, {
-                  valueAsNumber: true,
-                  required:
-                    field.name === "yearsOfExperience"
-                      ? "Years of experience is required"
-                      : false,
-                  min:
-                    field.name === "yearsOfExperience"
-                      ? { value: 0, message: "Must be 0 or greater" }
-                      : undefined,
-                })}
-                placeholder={field.placeholder}
-                style={{
-                  width: "100%",
-                  padding: "0.6rem",
-                  borderRadius: "8px",
-                  border: "1px solid #cbd5e1",
-                }}
-              />
-            )}
-
-            {field.type === "textarea" && (
-              <textarea
-                id={field.name}
-                {...register(field.name)}
-                placeholder={field.placeholder}
-                rows={3}
-                style={{
-                  width: "100%",
-                  padding: "0.6rem",
-                  borderRadius: "8px",
-                  border: "1px solid #cbd5e1",
-                  resize: "vertical",
-                }}
-              />
-            )}
-
-            {field.type === "checkbox" && (
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  cursor: "pointer",
-                }}
-              >
-                <input id={field.name} type="checkbox" {...register(field.name)} />
-                <span>{field.label}</span>
-              </label>
-            )}
-
-            {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-          </div>
+          <TextField
+            key={field.name}
+            id={field.name}
+            type={isNumber ? "number" : "text"}
+            label={field.label}
+            error={errorMessage}
+            placeholder={field.placeholder}
+            {...register(field.name, {
+              ...(isNumber ? { valueAsNumber: true } : {}),
+            })}
+          />
         );
       })}
 
-      {/* Mentorship Required Toggle – only if < 2 years of experience */}
-      {showMentorshipToggle && (
-        <div
-          style={{
-            marginTop: "1.5rem",
-            padding: "1rem",
-            borderRadius: "10px",
-            background: "#eff6ff",
-            border: "1px solid #bfdbfe",
-          }}
-        >
-          <p
-            style={{
-              marginTop: 0,
-              marginBottom: "0.5rem",
-              fontWeight: 500,
-              color: "#1d4ed8",
-            }}
-          >
-            Early-career support
+      {/* Advanced fields – only if yearsOfExperience >= 2 */}
+      {showAdvanced && (
+        <section className="section-card section-card--muted">
+          <h3 className="section-card__title">Advanced Experience</h3>
+          <p className="section-card__subtitle">
+            Since you have at least 2 years of experience, we&apos;d like to know more
+            about your responsibilities and React background.
           </p>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              cursor: "pointer",
-            }}
-          >
-            <input type="checkbox" {...register("mentorshipRequired")} />
-            <span>Mentorship required?</span>
-          </label>
-          <p
-            style={{
-              marginTop: "0.4rem",
-              fontSize: "0.8rem",
-              color: "#475569",
-            }}
-          >
-            Since you have less than 2 years of experience, we can match you with a
-            mentor.
+
+          {advancedFields.map((field) => {
+            const fieldError = errors[field.name];
+            const errorMessage = fieldError?.message as string | undefined;
+
+            if (field.type === "checkbox") {
+              return (
+                <CheckboxField
+                  key={field.name}
+                  label={field.label}
+                  {...register(field.name)}
+                />
+              );
+            }
+
+            if (field.type === "textarea") {
+              return (
+                <TextAreaField
+                  key={field.name}
+                  id={field.name}
+                  label={field.label}
+                  error={errorMessage}
+                  placeholder={field.placeholder}
+                  rows={3}
+                  {...register(field.name)}
+                />
+              );
+            }
+
+            const isNumber = field.type === "number";
+
+            return (
+              <TextField
+                key={field.name}
+                id={field.name}
+                type={isNumber ? "number" : "text"}
+                label={field.label}
+                error={errorMessage}
+                placeholder={field.placeholder}
+                {...register(field.name, {
+                  ...(isNumber ? { valueAsNumber: true } : {}),
+                })}
+              />
+            );
+          })}
+        </section>
+      )}
+
+      {/* Mentorship section – only if yearsOfExperience < 2 */}
+      {showMentorship && (
+        <section className="section-card section-card--info">
+          <h3 className="section-card__title">Early-career support</h3>
+          <p className="section-card__subtitle">
+            Since you have less than 2 years of experience, we&apos;d like to know whether
+            structured mentorship would help you ramp up.
           </p>
-        </div>
+
+          <CheckboxField
+            label="Mentorship required?"
+            {...register("mentorshipRequired")}
+          />
+        </section>
       )}
 
       <WizardNavigation back="/step/personal" next="/step/preferences" />

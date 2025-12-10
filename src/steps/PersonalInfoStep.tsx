@@ -1,14 +1,26 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useFormContext } from "../context/FormContext";
-import { WizardNavigation } from "../components/Wizard/WizardNavigation";
-import { validateEmailUniqueness } from "../utils/validateEmail";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface PersonalInfoFormValues {
-  fullName: string;
-  email: string;
-}
+import { useFormContext } from "../context/FormContext";
+import {
+  personalInfoSchema,
+  type PersonalInfoFormValues,
+} from "../validation/jobApplicationSchemas";
+import { TextField } from "../components/ui/TextField";
+import { WizardNavigation } from "../components/Wizard/WizardNavigation";
+
+// Simulated async uniqueness check: any email containing "test" is rejected
+const validateEmailUniqueness = async (email: string): Promise<boolean> => {
+  if (!email) return true;
+
+  // Simulate network delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  // Reject emails that contain "test"
+  return !email.toLowerCase().includes("test");
+};
 
 export const PersonalInfoStep: React.FC = () => {
   const { data, updateForm } = useFormContext();
@@ -17,15 +29,25 @@ export const PersonalInfoStep: React.FC = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
     watch,
+    setError,
+    clearErrors,
+    formState: { errors, isSubmitting },
   } = useForm<PersonalInfoFormValues>({
     mode: "onBlur",
-    defaultValues: data.personalInfo,
+    resolver: zodResolver(personalInfoSchema) as any,
+    defaultValues: {
+      fullName: data.personalInfo.fullName ?? "",
+      email: data.personalInfo.email ?? "",
+    },
   });
 
+  // Watch only the email field for helper text
+  const emailValue = watch("email");
+
+  // ✅ Autosave using a subscription to watch() (typed via `as any` to avoid TS overload error)
   useEffect(() => {
-    const subscription = watch((values) => {
+    const subscription = (watch as any)((values: PersonalInfoFormValues) => {
       updateForm({
         personalInfo: {
           ...data.personalInfo,
@@ -34,68 +56,56 @@ export const PersonalInfoStep: React.FC = () => {
       });
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription?.unsubscribe?.();
+    };
   }, [watch, updateForm, data.personalInfo]);
 
   const onSubmit = async (values: PersonalInfoFormValues) => {
-    updateForm({ personalInfo: values });
+    // Clear old email errors first
+    clearErrors("email");
+
+    // Run async "API" uniqueness check
+    const ok = await validateEmailUniqueness(values.email);
+
+    if (!ok) {
+      setError("email", {
+        type: "validate",
+        message: "Email already exists, try another.",
+      });
+      return; // ❌ Do NOT navigate if email is not unique
+    }
+
+    // ✅ If everything (Zod + async) passed, go to next step
     navigate("/step/experience");
   };
 
-  const emailValue = watch("email");
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <h2 style={{ marginBottom: "1rem" }}>Personal Information</h2>
+    <form onSubmit={handleSubmit(onSubmit as any)} className="form-step" noValidate>
+      <h2 className="form-step__title">Personal Info</h2>
+      <p className="form-step__subtitle">
+        Tell us how we can reach you. We also simulate an async email check to validate
+        uniqueness.
+      </p>
 
-      {/* Full Name */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label htmlFor="fullName" style={{ display: "block", marginBottom: "0.3rem" }}>
-          Full Name
-        </label>
-        <input
-          id="fullName"
-          {...register("fullName", { required: "Full name is required" })}
-          style={{
-            width: "100%",
-            padding: "0.6rem",
-            borderRadius: "8px",
-            border: "1px solid #cbd5e1",
-          }}
-        />
-        {errors.fullName && <p style={{ color: "red" }}>{errors.fullName.message}</p>}
-      </div>
+      <TextField
+        id="fullName"
+        label="Full Name"
+        error={errors.fullName?.message}
+        {...register("fullName", { required: "Full name is required" })}
+      />
 
-      {/* Email */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label htmlFor="email" style={{ display: "block", marginBottom: "0.3rem" }}>
-          Email
-        </label>
-        <input
-          id="email"
-          {...register("email", {
-            required: "Email is required",
-            validate: {
-              unique: async (value) => {
-                const ok = await validateEmailUniqueness(value);
-                return ok || "Email already exists, try another.";
-              },
-            },
-          })}
-          style={{
-            width: "100%",
-            padding: "0.6rem",
-            borderRadius: "8px",
-            border: "1px solid #cbd5e1",
-          }}
-        />
-        {isSubmitting && emailValue && (
-          <p style={{ color: "#2563eb", marginTop: "0.3rem" }}>Checking email...</p>
-        )}
-        {errors.email && <p style={{ color: "red" }}>{errors.email.message}</p>}
-      </div>
+      <TextField
+        id="email"
+        label="Email"
+        error={errors.email?.message}
+        helperText={isSubmitting && emailValue ? "Checking email..." : undefined}
+        {...register("email", {
+          required: "Email is required",
+        })}
+      />
 
-      {/* Navigation */}
+      {/* WizardNavigation gives you Reset + Next automatically */}
       <WizardNavigation next="/step/experience" />
     </form>
   );

@@ -1,12 +1,20 @@
+// src/steps/RolePreferencesStep.tsx
 import React, { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import { useFormContext } from "../context/FormContext";
 import {
-  rolePreferencesFields,
+  rolePreferencesSchema,
   type RolePreferencesFormValues,
-} from "../schemas/rolePreferencesSchema";
+} from "../validation/jobApplicationSchemas";
 import { WizardNavigation } from "../components/Wizard/WizardNavigation";
+import { SelectField } from "../components/ui/SelectField";
+import { TextField } from "../components/ui/TextField";
+import { TextAreaField } from "../components/ui/TextAreaField";
+import { CheckboxField } from "../components/ui/CheckboxField";
+import { Button } from "../components/ui/Button";
 
 export const RolePreferencesStep: React.FC = () => {
   const { data, updateForm } = useFormContext();
@@ -20,39 +28,42 @@ export const RolePreferencesStep: React.FC = () => {
     formState: { errors },
   } = useForm<RolePreferencesFormValues>({
     mode: "onBlur",
-    defaultValues: data.rolePreferences,
+    resolver: zodResolver(rolePreferencesSchema) as any,
+    defaultValues: {
+      preferredRole: data.rolePreferences.preferredRole || "",
+      workLocationType: data.rolePreferences.workLocationType || "",
+      expectedSalary: data.rolePreferences.expectedSalary ?? null,
+      openToRelocation: data.rolePreferences.openToRelocation,
+      portfolioUrls: data.rolePreferences.portfolioUrls ?? [],
+      notes: data.rolePreferences.notes ?? "",
+    },
   });
 
-  const { fields, append, remove } = useFieldArray<RolePreferencesFormValues>({
+  const watchedRole = watch("preferredRole");
+  const { experience } = data;
+  const reactYears = experience.reactYears ?? 0;
+
+  const showPortfolio =
+    watchedRole === "frontend" && typeof reactYears === "number" && reactYears > 3;
+
+  const { fields, append, remove } = useFieldArray({
     control,
     name: "portfolioUrls",
   });
 
-  // ensure at least one empty input
-  useEffect(() => {
-    if (fields.length === 0) {
-      append({ url: "" });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Auto-sync role preferences into global context
+  // Sync role preferences to global context
   useEffect(() => {
     const subscription = watch((values) => {
-      const raw = values.portfolioUrls ?? [];
-
-      // Ensure we always end up with { url: string }[]
-      const normalizedUrls: { url: string }[] = raw
-        .filter((item): item is { url?: string } => item !== undefined)
-        .map((item) => ({
-          url: item.url ?? "",
-        }));
-
       updateForm({
         rolePreferences: {
           ...data.rolePreferences,
           ...values,
-          portfolioUrls: normalizedUrls,
+          expectedSalary:
+            typeof values.expectedSalary === "number" ? values.expectedSalary : null,
+          portfolioUrls:
+            values.portfolioUrls?.map((item) => ({
+              url: item?.url ?? "",
+            })) ?? [],
         },
       });
     });
@@ -60,221 +71,132 @@ export const RolePreferencesStep: React.FC = () => {
     return () => subscription.unsubscribe();
   }, [watch, updateForm, data.rolePreferences]);
 
-  const preferredRole = watch("preferredRole");
-  const showPortfolioUrls =
-    preferredRole === "frontend" &&
-    typeof data.experience.reactYears === "number" &&
-    data.experience.reactYears > 3;
-
   const onSubmit = (values: RolePreferencesFormValues) => {
-    // Clean empty URLs
-    const cleanedUrls = (values.portfolioUrls || []).filter(
-      (item) => item && item.url.trim().length > 0
-    );
-
     updateForm({
       rolePreferences: {
+        ...data.rolePreferences,
         ...values,
-        portfolioUrls: cleanedUrls,
+        expectedSalary:
+          typeof values.expectedSalary === "number" ? values.expectedSalary : null,
+        portfolioUrls:
+          values.portfolioUrls?.map((item) => ({
+            url: item?.url ?? "",
+          })) ?? [],
       },
     });
 
     navigate("/step/review");
   };
 
+  const preferredRoleError = errors.preferredRole?.message as string | undefined;
+  const workLocationError = errors.workLocationType?.message as string | undefined;
+  const salaryError = errors.expectedSalary?.message as string | undefined;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <h2 style={{ marginBottom: "0.5rem" }}>Role Preferences</h2>
-      <p style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}>
-        Help us understand what kind of role and working style you are looking for. Some
-        options may unlock additional questions.
+    <form onSubmit={handleSubmit(onSubmit)} className="form-step" noValidate>
+      <h2 className="form-step__title">Role Preferences</h2>
+      <p className="form-step__subtitle">
+        Tell us what kind of role and work environment you&apos;re looking for. The form
+        will adapt based on your experience and preferences.
       </p>
 
-      {/* Schema-driven fields */}
-      {rolePreferencesFields.map((field) => {
-        const fieldError = errors[field.name];
-        const errorMessage = fieldError?.message as string | undefined;
+      {/* Preferred Role */}
+      <SelectField
+        id="preferredRole"
+        label="Preferred Role"
+        error={preferredRoleError}
+        {...register("preferredRole")}
+      >
+        <option value="">Select a role</option>
+        <option value="frontend">Frontend Engineer</option>
+        <option value="backend">Backend Engineer</option>
+        <option value="fullstack">Fullstack Engineer</option>
+        <option value="devops">DevOps / SRE</option>
+      </SelectField>
 
-        const label = (
-          <label
-            htmlFor={field.name}
-            style={{ display: "block", marginBottom: "0.3rem" }}
-          >
-            {field.label}
-          </label>
-        );
+      {/* Work Location */}
+      <SelectField
+        id="workLocationType"
+        label="Work Mode"
+        error={workLocationError}
+        {...register("workLocationType")}
+      >
+        <option value="">Select work mode</option>
+        <option value="remote">Remote</option>
+        <option value="hybrid">Hybrid</option>
+        <option value="onsite">Onsite</option>
+      </SelectField>
 
-        return (
-          <div style={{ marginBottom: "1rem" }} key={field.name}>
-            {field.type !== "checkbox" && label}
+      {/* Expected Salary */}
+      <TextField
+        id="expectedSalary"
+        type="number"
+        label="Expected Salary (per year, in your currency)"
+        error={salaryError}
+        helperText={
+          !salaryError
+            ? "You can provide an approximate expectation; this is not a binding number."
+            : undefined
+        }
+        placeholder="e.g. 1200000"
+        {...register("expectedSalary", { valueAsNumber: true })}
+      />
 
-            {field.type === "select" && (
-              <select
-                id={field.name}
-                {...register(field.name, {
-                  required:
-                    field.name === "preferredRole" || field.name === "workLocationType"
-                      ? "This field is required"
-                      : false,
-                })}
-                style={{
-                  width: "100%",
-                  padding: "0.6rem",
-                  borderRadius: "8px",
-                  border: "1px solid #cbd5e1",
-                  backgroundColor: "white",
-                }}
-              >
-                {(field.options || []).map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            )}
-
-            {field.type === "number" && (
-              <input
-                id={field.name}
-                type="number"
-                {...register(field.name, {
-                  valueAsNumber: true,
-                  min:
-                    field.name === "expectedSalary"
-                      ? {
-                          value: 0,
-                          message: "Salary must be 0 or greater",
-                        }
-                      : undefined,
-                })}
-                placeholder={field.placeholder}
-                style={{
-                  width: "100%",
-                  padding: "0.6rem",
-                  borderRadius: "8px",
-                  border: "1px solid #cbd5e1",
-                }}
-              />
-            )}
-
-            {field.type === "textarea" && (
-              <textarea
-                id={field.name}
-                {...register(field.name)}
-                placeholder={field.placeholder}
-                rows={3}
-                style={{
-                  width: "100%",
-                  padding: "0.6rem",
-                  borderRadius: "8px",
-                  border: "1px solid #cbd5e1",
-                  resize: "vertical",
-                }}
-              />
-            )}
-
-            {field.type === "checkbox" && (
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  cursor: "pointer",
-                }}
-              >
-                <input id={field.name} type="checkbox" {...register(field.name)} />
-                <span>{field.label}</span>
-              </label>
-            )}
-
-            {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-          </div>
-        );
-      })}
-
-      {/* Conditional Portfolio URLs */}
-      {showPortfolioUrls && (
-        <div
-          style={{
-            marginTop: "1.5rem",
-            padding: "1rem",
-            borderRadius: "10px",
-            background: "#fefce8",
-            border: "1px solid #facc15",
-          }}
-        >
-          <p
-            style={{
-              marginTop: 0,
-              marginBottom: "0.5rem",
-              fontWeight: 500,
-              color: "#92400e",
-            }}
-          >
-            Portfolio URLs
-          </p>
-          <p
-            style={{
-              marginTop: 0,
-              marginBottom: "0.8rem",
-              fontSize: "0.85rem",
-              color: "#78350f",
-            }}
-          >
-            Since you have more than 3 years of React experience and prefer a Frontend
-            role, please share links to your portfolio or key projects.
-          </p>
-
-          {fields.map((field, index) => (
-            <div
-              key={field.id}
-              style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}
-            >
-              <input
-                {...register(`portfolioUrls.${index}.url` as const)}
-                placeholder="https://example.com/my-react-project"
-                style={{
-                  flex: 1,
-                  padding: "0.6rem",
-                  borderRadius: "8px",
-                  border: "1px solid #cbd5e1",
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => remove(index)}
-                disabled={fields.length === 1}
-                style={{
-                  padding: "0.4rem 0.6rem",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: "#fee2e2",
-                  cursor: fields.length === 1 ? "not-allowed" : "pointer",
-                }}
-              >
-                ✕
-              </button>
+      {/* Open to relocation */}
+      <CheckboxField label="I'm open to relocation" {...register("openToRelocation")} />
+      {/* Portfolio URLs – only if frontend + reactYears > 3 */}
+      {showPortfolio && (
+        <section className="section-card section-card--muted form-array">
+          <div className="form-array__header">
+            <div>
+              <h3 className="form-array__title">Portfolio URLs</h3>
+              <p className="form-array__hint">
+                Share your best work: GitHub repos, live apps, or case studies.
+              </p>
             </div>
-          ))}
+            <Button type="button" variant="ghost" onClick={() => append({ url: "" })}>
+              + Add URL
+            </Button>
+          </div>
 
-          <button
-            type="button"
-            onClick={() => append({ url: "" })}
-            style={{
-              marginTop: "0.5rem",
-              padding: "0.4rem 0.8rem",
-              borderRadius: "8px",
-              border: "none",
-              background: "#22c55e",
-              color: "white",
-              cursor: "pointer",
-              fontSize: "0.85rem",
-            }}
-          >
-            + Add another URL
-          </button>
-        </div>
+          <div className="form-array__items">
+            {fields.map((field, index) => {
+              const urlError = errors.portfolioUrls?.[index]?.url?.message as
+                | string
+                | undefined;
+
+              return (
+                <div className="form-array__item" key={field.id}>
+                  <input
+                    className="form-field__input form-array__item-input"
+                    placeholder="https://example.com/your-work"
+                    {...register(`portfolioUrls.${index}.url` as const)}
+                  />
+                  <Button
+                    type="button"
+                    variant="danger"
+                    className="form-array__item-remove"
+                    onClick={() => remove(index)}
+                  >
+                    Remove
+                  </Button>
+                  {urlError && <p className="form-field__error">{urlError}</p>}
+                </div>
+              );
+            })}
+          </div>
+        </section>
       )}
+
+      {/* Notes */}
+      <TextAreaField
+        id="notes"
+        label="Additional Notes (optional)"
+        rows={3}
+        placeholder="Anything else we should know about your preferences?"
+        error={errors.notes?.message as string | undefined}
+        {...register("notes")}
+      />
 
       <WizardNavigation back="/step/experience" next="/step/review" />
     </form>

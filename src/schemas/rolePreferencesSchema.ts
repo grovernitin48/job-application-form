@@ -1,4 +1,3 @@
-// src/schemas/rolePreferencesSchema.ts
 import type { RolePreferencesInfo } from "../context/FormContext";
 
 export type RolePreferencesFormValues = RolePreferencesInfo;

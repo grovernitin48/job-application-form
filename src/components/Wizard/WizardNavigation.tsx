@@ -1,60 +1,48 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "../ui/Button";
+import { useFormContext } from "../../context/FormContext";
 
 interface WizardNavigationProps {
   next?: string;
   back?: string;
 }
 
-/**
- * Shared navigation for wizard steps.
- * - Back: simple navigation, does NOT submit the form.
- * - Next: type="submit", relies on the parent <form onSubmit={...}>.
- */
 export const WizardNavigation: React.FC<WizardNavigationProps> = ({ next, back }) => {
   const navigate = useNavigate();
+  const { resetForm } = useFormContext();
+
+  const handleReset = () => {
+    if (
+      window.confirm(
+        "This will clear your draft data and restart the application. Continue?"
+      )
+    ) {
+      resetForm();
+      navigate("/step/personal");
+    }
+  };
 
   return (
-    <div
-      style={{
-        marginTop: "2rem",
-        display: "flex",
-        justifyContent: "space-between",
-      }}
-    >
+    <div className="wizard-nav">
       {back ? (
-        <button
-          type="button"
-          onClick={() => navigate(back)}
-          style={{
-            padding: "0.6rem 1.2rem",
-            background: "#e2e8f0",
-            borderRadius: "8px",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
+        <Button type="button" variant="secondary" onClick={() => navigate(back)}>
           Back
-        </button>
+        </Button>
       ) : (
-        <div />
+        <div className="wizard-nav__spacer" />
       )}
 
-      {next && (
-        <button
-          type="submit"
-          style={{
-            padding: "0.6rem 1.2rem",
-            background: "#2563eb",
-            color: "white",
-            borderRadius: "8px",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Next
-        </button>
-      )}
+      <div className="wizard-nav__right">
+        <Button type="button" variant="ghost" onClick={handleReset}>
+          Reset
+        </Button>
+        {next && (
+          <Button type="submit" variant="primary">
+            Next
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,27 +1,21 @@
-// src/schemas/experienceSchema.ts
-import type { ExperienceInfo } from "../context/FormContext";
-
-/**
- * For now the Experience form values in the step
- * match the ExperienceInfo type stored in context.
- */
-export type ExperienceFormValues = ExperienceInfo;
+import type { ExperienceFormValues } from "../validation/jobApplicationSchemas";
 
 export type ExperienceFieldType = "text" | "number" | "textarea" | "checkbox";
 
+/**
+ * Field schema for Experience step.
+ * Uses ExperienceFormValues as the source of field names.
+ */
 export interface ExperienceFieldSchema {
   name: keyof ExperienceFormValues;
   label: string;
   type: ExperienceFieldType;
   placeholder?: string;
-  isAdvanced?: boolean; // advanced fields will be hidden if yearsOfExperience < 2
+  isAdvanced?: boolean; // advanced fields hidden when yearsOfExperience < 2
 }
 
 /**
  * Schema describing the Experience step fields.
- * - yearsOfExperience is always visible
- * - fields with isAdvanced: true only show for >= 2 years
- * - mentorshipRequired is handled separately (conditional UI)
  */
 export const experienceFields: ExperienceFieldSchema[] = [
   {

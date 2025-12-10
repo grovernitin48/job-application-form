@@ -8,6 +8,7 @@ import { ExperienceStep } from "./steps/ExperienceStep";
 import { RolePreferencesStep } from "./steps/RolePreferencesStep";
 import { ReviewSubmitStep } from "./steps/ReviewSubmitStep";
 import { FormProvider } from "./context/FormContext";
+import "./styles/main.css";
 
 const App: React.FC = () => {
   const getInitialPath = (): string => {
