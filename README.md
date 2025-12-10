@@ -1,365 +1,241 @@
-# 📘 Adaptive Job Application Form Wizard
-
-**React + TypeScript | Dynamic Schema | Auto-Save Drafts | Zod Validation | RTL Tests**
-
-A production-quality multi-step, schema-driven job application wizard with dynamic conditional fields, offline drafts, autosave, async validation, and behaviour tests.
-Built for an offline coding exercise emphasizing **design decisions**, **state management**, and **clean architecture**.
+Below is a **clean, crisp, and updated README** based on your new architecture, reusable components, async validation, and full production cleanup.
 
 ---
 
-## 🚀 Features Overview
+# 📘 Adaptive Job Application Form Wizard
 
-### 🧭 Multi-step Wizard
+**React + TypeScript · Zod Validation · Dynamic Schema · Autosave Drafts · Async Validation · RTL Tests**
 
-Steps:
+A production-style, multi-step job application wizard showcasing **schema-driven forms**, **dynamic conditional sections**, **autosave with resume**, **async validation**, reusable UI components, and clear architectural separation.
+
+Built for an offline frontend coding exercise emphasizing **design**, **state management**, **code quality**, and **real-world patterns**.
+
+---
+
+# 🚀 Features
+
+### 🧭 Multi-Step Wizard
 
 1. **Personal Info**
 2. **Experience**
 3. **Role Preferences**
 4. **Review & Submit**
 
-* Forward / Back navigation with per-step validation.
-* Persistent current step (restored from localStorage).
+Includes:
+
+* Back / Next navigation
+* Per-step validation
+* Reset button on every step
+* Last visited step restored from localStorage
 
 ---
 
-### 🔧 Dynamic, Schema-driven Behaviour
+### 🔧 Dynamic Schema-Driven Behaviour
 
-**Experience step:**
+All dynamic fields and logic come from **typed schemas** (Experience + Role).
 
-* Fields defined via a typed schema (`experienceFields` + `experienceSchema`).
-* If **Years of Experience < 2**:
+#### **Experience Step**
 
-  * Hide advanced fields.
-  * Show **“Mentorship required?”** toggle.
-* If **Years of Experience ≥ 2**:
+* If **Experience < 2 years** → Hide advanced fields, show **Mentorship Required**.
+* If **Experience ≥ 2 years** → Show advanced fields (React Years, Summary, Lead Experience).
 
-  * Show advanced experience fields (React years, team lead, summary).
+#### **Role Preferences Step**
 
-**Role Preferences step:**
-
-* Uses `rolePreferencesSchema` for validation.
-* If **Preferred Role = Frontend** AND **React Experience > 3**:
-
-  * Show a repeatable **Portfolio URLs** section (`useFieldArray`) where user can add/remove URLs.
+* If **Preferred Role = Frontend** AND **React Experience > 3** →
+  Show repeatable **Portfolio URLs** using `useFieldArray`.
 
 ---
 
-### 💾 Auto-Save Drafts & Resume
+### 💾 Auto-Save Drafts (Offline Resume)
 
-* All form data and current step are persisted to **localStorage**.
-* Autosave hooks into `watch()` from React Hook Form:
-
-  * Updates central `FormContext` state.
-  * Persists to storage on changes.
-* On reload, the app:
-
-  * Restores the last step.
-  * Pre-fills fields with saved values.
-* **Reset Application**:
-
-  * Clears localStorage + in-memory state.
-  * Sends user back to the **Personal Info** step.
+* Every change is autosaved via `watch()` → `FormContext` → `localStorage`.
+* Full form state + current step restore on reload.
+* **Reset Application** clears drafts and sends user to Step 1.
 
 ---
 
 ### 📊 Dynamic Progress Indicator
 
-* Progress bar is based on **visible logical units**, not just fixed steps.
-* Units include:
+Progress is based on **visible sections**, not fixed steps:
 
-  * Personal info
-  * Base experience
-  * Advanced experience (conditional)
-  * Mentorship section (conditional)
-  * Base role preferences
-  * Portfolio section (conditional)
-  * Review & Submit
-* When a section is not relevant (e.g., portfolio for non-frontend roles), it is **not counted** in the progress calculation, so the percentage reflects only relevant parts of the journey.
+* Personal Info
+* Base Experience
+* Advanced Experience (conditional)
+* Mentorship (conditional)
+* Base Role Preferences
+* Portfolio URLs (conditional)
+* Review
 
----
-
-### 🌐 Async Validation Simulation
-
-* **Email uniqueness** in Personal Info step is validated via a mock async function.
-* Behaviour:
-
-  * Emails containing `"test"` are treated as “already taken”.
-  * Shows **“Email already exists, try another.”** as a validation error.
-  * Demonstrates async validation and loading messaging (`Checking email...`), on top of Zod structural validation.
+Irrelevant sections are automatically excluded from progress %.
 
 ---
 
-### ✅ Strong Validation with Zod
+### 🌐 Async Validation (Personal Info)
 
-All core steps use **Zod** + `zodResolver`:
+Simulated API validation for **email uniqueness**:
+
+* Any email containing `"test"` is marked as already taken.
+* Shown after Zod validation (email format check).
+* Displays **"Checking email..."** while validating.
+
+---
+
+### 🛡️ Strong Validation with Zod
+
+Each step uses its own schema:
 
 * `personalInfoSchema`
 * `experienceSchema`
 * `rolePreferencesSchema`
 
-This gives:
+Integrated through `zodResolver` for:
 
-* Central, typed validation rules.
-* Consistent error messages.
-* Separation between **form types** and **context/storage types** where needed.
+* Consistent validation
+* Typed form values
+* Cleaner UI-logic separation
 
 ---
 
-## 🧱 Field Requirements (Mandatory vs Optional)
+# 🧱 Required Fields Summary
 
 ### Personal Info
 
-| Field    | Type   | Required? | Notes                          |
-| -------- | ------ | --------- | ------------------------------ |
-| fullName | string | ✅         | Min 2 characters               |
-| email    | string | ✅         | Valid email + async uniqueness |
-
----
+| Field    | Required | Notes                          |
+| -------- | -------- | ------------------------------ |
+| fullName | ✅        | Min 2 chars                    |
+| email    | ✅        | Valid email + async uniqueness |
 
 ### Experience
 
-| Field              | Type          | Required?       | Notes                                           |
-| ------------------ | ------------- | --------------- | ----------------------------------------------- |
-| yearsOfExperience  | number        | ✅               | ≥ 0, drives advanced/mentorship visibility      |
-| currentRole        | string        | ✅               |                                                 |
-| primaryTechStack   | string        | ✅               |                                                 |
-| reactYears         | number | null | ⛔ (conditional) | Optional; advanced field only                   |
-| teamLeadExperience | boolean       | ⛔               | Advanced; defaults false                        |
-| summary            | string        | ⛔               | Advanced; optional text                         |
-| mentorshipRequired | boolean       | ⛔ (conditional) | Only meaningful when years < 2; shown as toggle |
-
----
+| Field              | Required | Notes                 |
+| ------------------ | -------- | --------------------- |
+| yearsOfExperience  | ✅        | Drives dynamic fields |
+| currentRole        | ✅        | —                     |
+| primaryTechStack   | ✅        | —                     |
+| reactYears         | ⛔        | Advanced only         |
+| teamLeadExperience | ⛔        | Advanced only         |
+| summary            | ⛔        | Advanced only         |
+| mentorshipRequired | ⛔        | For <2 years only     |
 
 ### Role Preferences
 
-| Field            | Type                                            | Required?       | Notes                                                      |
-| ---------------- | ----------------------------------------------- | --------------- | ---------------------------------------------------------- |
-| preferredRole    | "frontend" | "backend" | "fullstack" | "devops" | ✅               | Non-empty enum                                             |
-| workLocationType | "remote" | "hybrid" | "onsite"                  | ✅               | Non-empty enum                                             |
-| expectedSalary   | number | null                                   | ⛔               | If provided, must be ≥ 0                                   |
-| openToRelocation | boolean                                         | ⛔               | Defaults false                                             |
-| portfolioUrls    | { url: string }[]                               | ⛔ (conditional) | Only shown for frontend + React years > 3; repeatable list |
-| notes            | string                                          | ⛔               | Additional preference info                                 |
+| Field            | Required | Notes                                |
+| ---------------- | -------- | ------------------------------------ |
+| preferredRole    | ✅        | Enum                                 |
+| workLocationType | ✅        | Enum                                 |
+| expectedSalary   | ⛔        | Optional number                      |
+| openToRelocation | ⛔        | Boolean                              |
+| portfolioUrls    | ⛔        | Only for (frontend + reactYears > 3) |
+| notes            | ⛔        | Optional text                        |
 
 ---
 
-## 🔁 Flow Diagram (Logical Flow)
+# 🔁 Logical Flow Diagram
 
 ```text
-[Personal Info]
+Personal Info
    |
    v
-[Experience]
+Experience
+   |-- if years < 2:
+   |        show Mentorship Required
    |
-   |-- if yearsOfExperience < 2:
-   |       show "Mentorship Required?" section
-   |
-   |-- if yearsOfExperience >= 2:
-   |       show Advanced Experience fields (React years, team lead, summary)
-   |
-   v
-[Role Preferences]
-   |
-   |-- if preferredRole = "frontend" AND reactYears > 3:
-   |       show repeatable "Portfolio URLs" section
+   |-- if years >= 2:
+   |        show Advanced Fields
    |
    v
-[Review & Submit]
+Role Preferences
+   |-- if preferredRole = frontend AND reactYears > 3:
+   |        show Portfolio URLs
    |
-   |-- actions:
-          - Back to Role
-          - Reset Application (clear drafts & restart)
-          - Submit (simulate API submission)
+   v
+Review & Submit
+   |-- Back
+   |-- Reset (clear drafts)
+   |-- Submit (simulated)
 ```
 
-# 🗂️ Project Structure
+---
+
+# 🗂️ Project Structure (Updated)
 
 ```
 src/
   components/
-    Layout/
-      WizardLayout.tsx
+    ui/
+      Button.tsx
+      TextField.tsx
+      TextAreaField.tsx
+      CheckboxField.tsx
+      SelectField.tsx
     Wizard/
       WizardNavigation.tsx
+    Layout/
+      WizardLayout.tsx
+
   context/
     FormContext.tsx
+
+  validation/
+    jobApplicationSchemas.ts     # Zod schemas + types
+
   schemas/
-    experienceSchema.ts
-    rolePreferencesSchema.ts
+    experienceSchema.ts          # Field config
+    rolePreferencesSchema.ts     # Field config
+
   steps/
     PersonalInfoStep.tsx
     ExperienceStep.tsx
     RolePreferencesStep.tsx
     ReviewSubmitStep.tsx
+
   tests/
     PersonalInfoStep.test.tsx
     ExperienceStep.test.tsx
     RolePreferencesStep.test.tsx (skipped)
+
+  styles/
+    main.css
+
   App.tsx
   main.tsx
 ```
 
 ---
 
-## 🧱 Architecture & Design Decisions
-
-### 🔹 FormContext (central state)
-
-* Single `FormContext` with:
-
-  * `data` for all steps (personal, experience, rolePreferences)
-  * `updateForm` to update partial sections
-  * `resetApplication` to clear drafts and restart
-  * `currentStep` tracking (for progress, navigation context)
-* Simplifies:
-
-  * Autosave
-  * Review summary
-  * Cross-step conditional logic (e.g., reactYears influencing Role step).
-
-### 🔹 React Hook Form + Zod
-
-* `useForm` used per step with `zodResolver` for that step’s schema.
-* `watch()`:
-
-  * Drives dynamic UI (e.g., `showAdvanced`, `showMentorship`, `showPortfolio`).
-  * Triggers `updateForm` to sync step values into context.
-
-### 🔹 Typed Schemas
-
-* Experience and Role preferences fields are modeled with:
-
-  * Typed **field schemas** (for dynamic rendering).
-  * Zod **validation schemas** (for structure & constraints).
-* This mimics a production “schema-driven form” approach.
-
----
-
-### CSS & BEM-ish conventions
-
-* **No inline styles** in step components.
-* Shared classes for forms:
-
-  * `.form-step`, `.form-step__title`, `.form-step__subtitle`
-  * `.form-field`, `.form-field__label`, `.form-field__input`, `.form-field__textarea`, `.form-field__error`, `.form-field__helper`
-  * `.form-checkbox`, `.form-checkbox__input`, `.form-checkbox__label`
-  * `.section-card` + modifiers: `--muted`, `--info`, `--warning`
-  * Portfolio/array helper classes:
-
-    * `.form-array`, `.form-array__header`, `.form-array__items`, `.form-array__item`
-* Buttons:
-
-  * `.button`, `.button--primary`, `.button--secondary`, `.button--ghost`, `.button--danger`
-* Review step:
-
-  * `.review-grid`, `.review-card`, `.review-card__item`, `.review-actions`, `.review-portfolio-list`
-
-This keeps styling **consistent, reusable, and easy to tweak**.
-
----
-
-## 🧪 Testing
+# 🧪 Testing
 
 ### Tech
-
-* **Vitest** (test runner)
-* **React Testing Library**
-* **happy-dom** (test environment)
-* **@testing-library/jest-dom** matchers
-
-### Coverage (current)
-
-| Step          | Behaviour tested                                    | Status                                               |
-| ------------- | --------------------------------------------------- | ---------------------------------------------------- |
-| Personal Info | Async email validation on blur                      | ✅ PASS                                               |
-| Experience    | Conditional advanced fields / mentorship visibility | ✅ PASS                                               |
-| Role Prefs    | Portfolio URLs behaviour                            | ⚠️ Skipped (`describe.skip`) due to timing/flakiness |
-
-> Note: `RolePreferencesStep` tests are present but currently wrapped in `describe.skip` due to some environment/state timing issues with `watch` + autosave. In a production setting, I would extract the conditional logic into a separate hook and test it in isolation, then add a lean integration test for portfolio UI.
-
-### Commands
-
-```bash
-npm run test        # run all tests
-```
-
----
-
-## 🧹 Linting & Formatting
-
-### ESLint (flat config)
-
-* ESLint configured for:
-
-  * React
-  * React Hooks
-  * TypeScript
-* Key rules:
-
-  * Hooks rules (`react-hooks/rules-of-hooks`, `exhaustive-deps`)
-  * `@typescript-eslint/no-unused-vars`
-  * Prettier integration via `eslint-plugin-prettier`
-
-### Prettier
-
-* Prettier config in `prettier.config.cjs`.
-
-```
-
----
-
-## 🛠️ Tech Stack
-
-**Core:**
-
-* React (with Hooks)
-* TypeScript
-* React Router
-* React Hook Form
-* Zod
-* Vite
-
-**Testing:**
 
 * Vitest
 * React Testing Library
 * happy-dom
+* jest-dom matchers
 
-**Tooling:**
+### Status
 
-* ESLint (flat config)
-* Prettier
+| Step             | What is tested       | Status     |
+| ---------------- | -------------------- | ---------- |
+| Personal Info    | Async validation     | ✅          |
+| Experience       | Conditional sections | ✅          |
+| Role Preferences | Portfolio logic      | ⚠️ skipped |
 
----
-
-## 📦 Getting Started
-
-### 1. Install dependencies
-
-```bash
-npm install
-```
-
-### 2. Run the app
-
-```bash
-npm run dev
-```
-
-App will be available at (default Vite):
-
-```text
-http://localhost:5173
-```
-
-### 3. Run tests
+Run tests:
 
 ```bash
 npm run test
 ```
 
-### 4. Lint & format
+---
+
+# 🧹 Linting & Formatting
+
+* ESLint (flat config)
+* react-hooks rules
+* TypeScript rules
+* Prettier on save
+
+Commands:
 
 ```bash
 npm run lint
@@ -368,3 +244,42 @@ npm run format
 ```
 
 ---
+
+# 📦 Running Locally
+
+### 1. Clone Repo
+
+```bash
+git clone https://github.com/<your-username>/job-application-wizard.git
+cd job-application-wizard
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Start Dev Server
+
+```bash
+npm run dev
+```
+
+Open:
+
+```
+http://localhost:5173
+```
+
+### 4. Run Tests
+
+```bash
+npm run test
+```
+
+---
+
+# 🌐 CodeSandbox Link
+
+Go to **[job-application-form](https://codesandbox.io/p/sandbox/github/grovernitin48/job-application-form)**
