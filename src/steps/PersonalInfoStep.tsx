@@ -50,10 +50,14 @@ export const PersonalInfoStep: React.FC = () => {
 
       {/* Full Name */}
       <div style={{ marginBottom: "1rem" }}>
-        <label style={{ display: "block", marginBottom: "0.3rem" }}>
+        <label
+          htmlFor="fullName"
+          style={{ display: "block", marginBottom: "0.3rem" }}
+        >
           Full Name
         </label>
         <input
+          id="fullName"
           {...register("fullName", { required: "Full name is required" })}
           style={{
             width: "100%",
@@ -69,10 +73,14 @@ export const PersonalInfoStep: React.FC = () => {
 
       {/* Email */}
       <div style={{ marginBottom: "1rem" }}>
-        <label style={{ display: "block", marginBottom: "0.3rem" }}>
+        <label
+          htmlFor="email"
+          style={{ display: "block", marginBottom: "0.3rem" }}
+        >
           Email
         </label>
         <input
+          id="email"
           {...register("email", {
             required: "Email is required",
             validate: {

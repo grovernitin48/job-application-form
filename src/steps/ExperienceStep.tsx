@@ -78,9 +78,8 @@ export const ExperienceStep: React.FC = () => {
           </label>
         );
 
-        const errorMessage = (errors as any)[field.name]?.message as
-          | string
-          | undefined;
+        const fieldError = errors[field.name];
+        const errorMessage = fieldError?.message as string | undefined;
 
         return (
           <div style={{ marginBottom: "1rem" }} key={field.name as string}>

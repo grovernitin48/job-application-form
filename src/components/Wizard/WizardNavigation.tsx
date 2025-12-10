@@ -1,4 +1,3 @@
-// src/components/Wizard/WizardNavigation.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,6 +6,11 @@ interface WizardNavigationProps {
   back?: string;
 }
 
+/**
+ * Shared navigation for wizard steps.
+ * - Back: simple navigation, does NOT submit the form.
+ * - Next: type="submit", relies on the parent <form onSubmit={...}>.
+ */
 export const WizardNavigation: React.FC<WizardNavigationProps> = ({
   next,
   back,
@@ -23,6 +27,7 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({
     >
       {back ? (
         <button
+          type="button"
           onClick={() => navigate(back)}
           style={{
             padding: "0.6rem 1.2rem",

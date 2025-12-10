@@ -45,8 +45,7 @@ export const ReviewSubmitStep: React.FC = () => {
   const { personalInfo, experience, rolePreferences } = data;
 
   const hasPortfolio =
-    rolePreferences.portfolioUrls &&
-    rolePreferences.portfolioUrls.length > 0;
+    rolePreferences.portfolioUrls && rolePreferences.portfolioUrls.length > 0;
 
   const safeValue = (value: unknown): string => {
     if (value === null || value === undefined || value === "") return "—";
@@ -57,7 +56,9 @@ export const ReviewSubmitStep: React.FC = () => {
   return (
     <form onSubmit={handleSubmit}>
       <h2 style={{ marginBottom: "0.5rem" }}>Review & Submit</h2>
-      <p style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}>
+      <p
+        style={{ marginBottom: "1.5rem", color: "#64748b", fontSize: "0.9rem" }}
+      >
         Please review your application before submitting. You can go back to any
         step to make changes.
       </p>
@@ -166,15 +167,15 @@ export const ReviewSubmitStep: React.FC = () => {
             <div style={{ marginTop: "0.5rem" }}>
               <strong>Portfolio URLs:</strong>
               <ul style={{ paddingLeft: "1.2rem", marginTop: "0.25rem" }}>
-                {rolePreferences.portfolioUrls.map((url, index) => (
-                  <li key={`${url}-${index}`}>
+                {rolePreferences.portfolioUrls.map((item, index) => (
+                  <li key={`${item.url}-${index}`}>
                     <a
-                      href={url}
+                      href={item.url}
                       target="_blank"
                       rel="noreferrer"
                       style={{ color: "#2563eb", textDecoration: "underline" }}
                     >
-                      {url}
+                      {item.url}
                     </a>
                   </li>
                 ))}

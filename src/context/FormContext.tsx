@@ -1,6 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { DRAFT_STORAGE_KEY } from "../utils/storageKeys";
-
 
 // --------- Types for each step ---------
 export interface PersonalInfo {
@@ -23,7 +23,7 @@ export interface RolePreferencesInfo {
   workLocationType: "remote" | "hybrid" | "onsite" | "";
   expectedSalary: number | null;
   openToRelocation: boolean;
-  portfolioUrls: string[];
+  portfolioUrls: { url: string }[];
   notes: string;
 }
 
@@ -38,6 +38,9 @@ interface FormContextValue {
   data: JobApplicationForm;
   updateForm: (patch: Partial<JobApplicationForm>) => void;
   resetForm: () => void;
+
+  currentStep: string;
+  setCurrentStep: (step: string) => void;
 }
 
 // --------- Defaults ---------
@@ -69,15 +72,12 @@ const FormContext = createContext<FormContextValue | undefined>(undefined);
 
 /**
  * FormProvider – holds global wizard state.
- * Responsibilities:
- *  - Initialize from any saved draft in localStorage.
- *  - Auto-save to localStorage whenever data or currentStep changes.
- *  - Provide reset() to clear in-memory state (and callers clear storage).
+ * - Initializes from localStorage draft
+ * - Auto-saves data + last step back to localStorage
  */
 export const FormProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  // Initialize from localStorage draft synchronously so forms get correct defaultValues
   const [data, setData] = useState<JobApplicationForm>(() => {
     try {
       const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
@@ -85,13 +85,10 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const parsed = JSON.parse(raw);
       if (parsed && parsed.data) {
-        return {
-          ...defaultForm,
-          ...parsed.data,
-        };
+        return { ...defaultForm, ...parsed.data };
       }
     } catch {
-      // ignore parse/storage errors
+      // ignore
     }
     return defaultForm;
   });
@@ -112,7 +109,6 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   const updateForm = (patch: Partial<JobApplicationForm>) => {
-    // We merge top-level sections (personalInfo / experience / rolePreferences)
     setData((prev) => ({ ...prev, ...patch }));
   };
 
@@ -121,7 +117,7 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({
     setCurrentStep("/step/personal");
   };
 
-  // Auto-save to localStorage whenever form data or currentStep changes
+  // Auto-save whenever data or currentStep changes
   useEffect(() => {
     try {
       const payload = JSON.stringify({
@@ -130,7 +126,7 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({
       });
       window.localStorage.setItem(DRAFT_STORAGE_KEY, payload);
     } catch {
-      // ignore write errors (quota, private mode, etc.)
+      // ignore storage errors
     }
   }, [data, currentStep]);
 

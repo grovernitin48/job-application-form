@@ -2,8 +2,10 @@ import React, { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useFormContext } from "../context/FormContext";
-import { rolePreferencesFields } from "../schemas/rolePreferencesSchema";
-import type { RolePreferencesFormValues } from "../schemas/rolePreferencesSchema";
+import {
+  rolePreferencesFields,
+  type RolePreferencesFormValues,
+} from "../schemas/rolePreferencesSchema";
 import { WizardNavigation } from "../components/Wizard/WizardNavigation";
 
 export const RolePreferencesStep: React.FC = () => {
@@ -20,17 +22,31 @@ export const RolePreferencesStep: React.FC = () => {
     mode: "onBlur",
     defaultValues: data.rolePreferences,
   });
-  const { fields, append, remove } = useFieldArray({
+
+  const { fields, append, remove } = useFieldArray<RolePreferencesFormValues>({
     control,
     name: "portfolioUrls",
   });
 
+  // ensure at least one empty input
+  useEffect(() => {
+    if (fields.length === 0) {
+      append({ url: "" });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Auto-sync role preferences into global context
   useEffect(() => {
     const subscription = watch((values) => {
-      // Ensure portfolioUrls is always string[]
-      const rawUrls = values.portfolioUrls ?? [];
-      const normalizedUrls = rawUrls.map((url) => url ?? "");
+      const raw = values.portfolioUrls ?? [];
+
+      // Ensure we always end up with { url: string }[]
+      const normalizedUrls: { url: string }[] = raw
+        .filter((item): item is { url?: string } => item !== undefined)
+        .map((item) => ({
+          url: item.url ?? "",
+        }));
 
       updateForm({
         rolePreferences: {
@@ -44,14 +60,6 @@ export const RolePreferencesStep: React.FC = () => {
     return () => subscription.unsubscribe();
   }, [watch, updateForm, data.rolePreferences]);
 
-  // Ensure at least one empty field exists when we need portfolio URLs
-  useEffect(() => {
-    if (fields.length === 0) {
-      append("");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const preferredRole = watch("preferredRole");
   const showPortfolioUrls =
     preferredRole === "frontend" &&
@@ -59,9 +67,9 @@ export const RolePreferencesStep: React.FC = () => {
     data.experience.reactYears > 3;
 
   const onSubmit = (values: RolePreferencesFormValues) => {
-    // Clean up: remove empty URLs
+    // Clean empty URLs
     const cleanedUrls = (values.portfolioUrls || []).filter(
-      (url) => url.trim().length > 0
+      (item) => item && item.url.trim().length > 0
     );
 
     updateForm({
@@ -86,9 +94,8 @@ export const RolePreferencesStep: React.FC = () => {
 
       {/* Schema-driven fields */}
       {rolePreferencesFields.map((field) => {
-        const errorMessage = (errors as any)[field.name]?.message as
-          | string
-          | undefined;
+        const fieldError = errors[field.name];
+        const errorMessage = fieldError?.message as string | undefined;
 
         const label = (
           <label
@@ -100,13 +107,13 @@ export const RolePreferencesStep: React.FC = () => {
         );
 
         return (
-          <div style={{ marginBottom: "1rem" }} key={field.name as string}>
+          <div style={{ marginBottom: "1rem" }} key={field.name}>
             {field.type !== "checkbox" && label}
 
             {field.type === "select" && (
               <select
                 id={field.name}
-                {...register(field.name as any, {
+                {...register(field.name, {
                   required:
                     field.name === "preferredRole" ||
                     field.name === "workLocationType"
@@ -133,7 +140,7 @@ export const RolePreferencesStep: React.FC = () => {
               <input
                 id={field.name}
                 type="number"
-                {...register(field.name as any, {
+                {...register(field.name, {
                   valueAsNumber: true,
                   min:
                     field.name === "expectedSalary"
@@ -156,7 +163,7 @@ export const RolePreferencesStep: React.FC = () => {
             {field.type === "textarea" && (
               <textarea
                 id={field.name}
-                {...register(field.name as any)}
+                {...register(field.name)}
                 placeholder={field.placeholder}
                 rows={3}
                 style={{
@@ -181,7 +188,7 @@ export const RolePreferencesStep: React.FC = () => {
                 <input
                   id={field.name}
                   type="checkbox"
-                  {...register(field.name as any)}
+                  {...register(field.name)}
                 />
                 <span>{field.label}</span>
               </label>
@@ -231,7 +238,7 @@ export const RolePreferencesStep: React.FC = () => {
               style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}
             >
               <input
-                {...register(`portfolioUrls.${index}` as const)}
+                {...register(`portfolioUrls.${index}.url` as const)}
                 placeholder="https://example.com/my-react-project"
                 style={{
                   flex: 1,
@@ -259,7 +266,7 @@ export const RolePreferencesStep: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => append("")}
+            onClick={() => append({ url: "" })}
             style={{
               marginTop: "0.5rem",
               padding: "0.4rem 0.8rem",

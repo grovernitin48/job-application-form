@@ -5,8 +5,19 @@ export type RolePreferencesFormValues = RolePreferencesInfo;
 
 export type RoleFieldType = "select" | "number" | "textarea" | "checkbox";
 
+/**
+ * These are the scalar fields we render via the schema.
+ * portfolioUrls is handled separately via useFieldArray.
+ */
+export type RolePreferenceFieldName =
+  | "preferredRole"
+  | "workLocationType"
+  | "expectedSalary"
+  | "openToRelocation"
+  | "notes";
+
 export interface RolePreferenceFieldSchema {
-  name: keyof RolePreferencesFormValues;
+  name: RolePreferenceFieldName;
   label: string;
   type: RoleFieldType;
   placeholder?: string;
