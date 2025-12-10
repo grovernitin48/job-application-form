@@ -11,8 +11,7 @@ export const ReviewSubmitStep: React.FC = () => {
 
   const handleSubmit = () => {
     // In a real app, this is where we'd call an API.
-    // For this exercise, we just log the payload and pretend it's submitted.
-
+    // For this exercise, just logging the payload, not for prod.
     console.log("Submitting application payload:", data);
 
     alert("Application submitted! (simulated)");

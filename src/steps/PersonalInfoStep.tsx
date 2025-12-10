@@ -32,6 +32,7 @@ export const PersonalInfoStep: React.FC = () => {
     watch,
     setError,
     clearErrors,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<PersonalInfoFormValues>({
     mode: "onBlur",
@@ -73,13 +74,19 @@ export const PersonalInfoStep: React.FC = () => {
         type: "validate",
         message: "Email already exists, try another.",
       });
-      return; // ❌ Do NOT navigate if email is not unique
+      return; // Do NOT navigate if email is not unique
     }
 
-    // ✅ If everything (Zod + async) passed, go to next step
+    // If everything (Zod + async) passed, go to next step
     navigate("/step/experience");
   };
 
+  const handleResetStep = () => {
+    reset({
+      fullName: "",
+      email: "",
+    });
+  };
   return (
     <form onSubmit={handleSubmit(onSubmit as any)} className="form-step" noValidate>
       <h2 className="form-step__title">Personal Info</h2>
@@ -106,7 +113,7 @@ export const PersonalInfoStep: React.FC = () => {
       />
 
       {/* WizardNavigation gives you Reset + Next automatically */}
-      <WizardNavigation next="/step/experience" />
+      <WizardNavigation next="/step/experience" onResetStep={handleResetStep} />
     </form>
   );
 };

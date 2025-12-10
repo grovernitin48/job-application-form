@@ -6,9 +6,14 @@ import { useFormContext } from "../../context/FormContext";
 interface WizardNavigationProps {
   next?: string;
   back?: string;
+  onResetStep?: () => void; // ⬅️ NEW: optional callback from step
 }
 
-export const WizardNavigation: React.FC<WizardNavigationProps> = ({ next, back }) => {
+export const WizardNavigation: React.FC<WizardNavigationProps> = ({
+  next,
+  back,
+  onResetStep,
+}) => {
   const navigate = useNavigate();
   const { resetForm } = useFormContext();
 
@@ -18,7 +23,13 @@ export const WizardNavigation: React.FC<WizardNavigationProps> = ({ next, back }
         "This will clear your draft data and restart the application. Continue?"
       )
     ) {
+      // Let the current step reset its local form state (RHF)
+      onResetStep?.();
+
+      // Reset global form context + localStorage
       resetForm();
+
+      // Go back to the first step
       navigate("/step/personal");
     }
   };
